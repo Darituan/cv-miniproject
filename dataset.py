@@ -40,7 +40,7 @@ class CarDataset(Dataset):
 
     def __getitem__(self, item):
         img_path = os.path.join(self.image_dir, self.images[item])
-        ann_path = os.path.join(self.ann_dir, self.images[item].replace(".png", ".png.json"))
+        ann_path = os.path.join(self.ann_dir, self.images[item]+".json")
         img = np.array(Image.open(img_path).convert("RGB"))
         ann = json.load(open(ann_path, "r"))
 

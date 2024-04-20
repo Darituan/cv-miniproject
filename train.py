@@ -7,6 +7,8 @@ import torch.optim as optim
 
 from metadata import retrieve_meta_data
 from model import UNet
+from utils import get_loaders
+
 # from utils import (
 #     load_checkpoint,
 #     save_checkpoint,
@@ -26,12 +28,16 @@ IMAGE_WIDTH = 320
 PIN_MEMORY = True
 LOAD_MODEL = False
 
-PARTS_IMG_DIR = "dataset/parts/File1/img"
-PARTS_ANN_DIR = "dataset/parts/File1/ann"
+TRAIN_PARTS_IMG_DIR = "dataset/parts/File1/img_train"
+VAL_PARTS_IMG_DIR = "dataset/parts/File1/img_val"
+TRAIN_PARTS_ANN_DIR = "dataset/parts/File1/ann_train"
+VAL_PARTS_ANN_DIR = "dataset/parts/File1/ann_val"
 PARTS_META_PATH = "dataset/parts/meta.json"
 
-DAMAGE_IMG_DIR = "dataset/damage/File1/img"
-DAMAGE_ANN_DIR = "dataset/damage/File1/ann"
+TRAIN_DAMAGE_IMG_DIR = "dataset/damage/File1/img_train"
+VAL_DAMAGE_IMG_DIR = "dataset/damage/File1/img_val"
+TRAIN_DAMAGE_ANN_DIR = "dataset/damage/File1/ann_train"
+VAL_DAMAGE_ANN_DIR = "dataset/damage/File1/ann_val"
 DAMAGE_META_PATH = "dataset/damage/meta.json"
 
 
@@ -90,7 +96,7 @@ def make_val_transform():
     return transform
 
 
-def train_on(img_dir, ann_dir, meta_path):
+def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path):
     train_transform = make_train_transform()
     val_transforms = make_val_transform()
 
@@ -102,8 +108,10 @@ def train_on(img_dir, ann_dir, meta_path):
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     train_loader, val_loader = get_loaders(
-        img_dir,
-        ann_dir,
+        train_dir,
+        train_ann_dir,
+        val_dir,
+        val_ann_dir,
         classes,
         BATCH_SIZE,
         train_transform,
@@ -122,7 +130,7 @@ def train_on(img_dir, ann_dir, meta_path):
 
 
 def main():
-    train_on(PARTS_IMG_DIR, PARTS_ANN_DIR, PARTS_META_PATH)
+    train_on(TRAIN_PARTS_IMG_DIR, TRAIN_PARTS_ANN_DIR, VAL_PARTS_IMG_DIR, VAL_PARTS_ANN_DIR, PARTS_META_PATH)
 
 
 if __name__ == "__main__":
