@@ -4,6 +4,8 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
+
+from metadata import retrieve_meta_data
 from model import UNet
 # from utils import (
 #     load_checkpoint,
@@ -92,14 +94,17 @@ def train_on(img_dir, ann_dir, meta_path):
     train_transform = make_train_transform()
     val_transforms = make_val_transform()
 
-    model = UNet(in_channels=3, out_channels=22).to(DEVICE)
+    classes, class_titles, associated_colors = retrieve_meta_data(meta_path)
+    out_channels = len(classes) + 1
+
+    model = UNet(in_channels=3, out_channels=out_channels).to(DEVICE)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     train_loader, val_loader = get_loaders(
         img_dir,
         ann_dir,
-        meta_path,
+        classes,
         BATCH_SIZE,
         train_transform,
         val_transforms,
