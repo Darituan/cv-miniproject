@@ -7,15 +7,14 @@ import torch.optim as optim
 
 from metadata import retrieve_meta_data
 from model import UNet
-from utils import get_loaders
 
-# from utils import (
-#     load_checkpoint,
-#     save_checkpoint,
-#     get_loaders,
-#     check_accuracy,
-#     save_predictions_as_imgs,
-# )
+from utils import (
+    load_checkpoint,
+    save_checkpoint,
+    get_loaders,
+    check_accuracy,
+    save_predictions_as_imgs,
+)
 
 
 LEARNING_RATE = 1e-4
@@ -46,7 +45,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
     for batch_idx, (data, targets) in enumerate(loop):
         data = data.to(device=DEVICE)
-        targets = targets.float().unsqueeze(1).to(device=DEVICE)
+        targets = targets.float().to(device=DEVICE)
 
         # forward
         with torch.cuda.amp.autocast():
@@ -75,7 +74,7 @@ def make_train_transform():
                 std=[1.0, 1.0, 1.0],
                 max_pixel_value=255.0,
             ),
-            ToTensorV2(),
+            ToTensorV2(transpose_mask=True),
         ],
     )
     return transform
@@ -90,13 +89,13 @@ def make_val_transform():
                 std=[1.0, 1.0, 1.0],
                 max_pixel_value=255.0,
             ),
-            ToTensorV2(),
+            ToTensorV2(transpose_mask=True),
         ],
     )
     return transform
 
 
-def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path):
+def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path, checkpoint_filename="my_checkpoint.pth.tar"):
     train_transform = make_train_transform()
     val_transforms = make_val_transform()
 
@@ -120,13 +119,23 @@ def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path):
         PIN_MEMORY,
     )
 
+    if LOAD_MODEL:
+        load_checkpoint(torch.load(checkpoint_filename), model)
+
     scaler = torch.cuda.amp.GradScaler()
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
         # save model
+        checkpoint = {
+            "state_dict": model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+        }
+        save_checkpoint(checkpoint, checkpoint_filename)
         # check accuracy
+        check_accuracy(val_loader, model, device=DEVICE)
         # print some examples to a folder
+        save_predictions_as_imgs(val_loader, model, device=DEVICE)
 
 
 def main():
