@@ -21,12 +21,12 @@ from utils import (
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
-NUM_EPOCHS = 20
+NUM_EPOCHS = 100
 NUM_WORKERS = 4
 IMAGE_HEIGHT = 320
 IMAGE_WIDTH = 320
 PIN_MEMORY = True
-LOAD_MODEL = True
+LOAD_MODEL = False
 
 TRAIN_PARTS_IMG_DIR = "dataset/parts/File1/img_train"
 VAL_PARTS_IMG_DIR = "dataset/parts/File1/img_val"
@@ -139,11 +139,19 @@ def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path, checkpoi
         check_accuracy(val_loader, model, device=DEVICE)
         # print some examples to a folder
         # save_predictions_as_imgs(val_loader, model, device=DEVICE)
+    visualize(val_loader, model, device=DEVICE)
     save_checkpoint(checkpoint, checkpoint_filename)
 
 
 def main():
-    train_on(TRAIN_PARTS_IMG_DIR, TRAIN_PARTS_ANN_DIR, VAL_PARTS_IMG_DIR, VAL_PARTS_ANN_DIR, PARTS_META_PATH)
+    train_on(
+        TRAIN_PARTS_IMG_DIR,
+        TRAIN_PARTS_ANN_DIR,
+        VAL_PARTS_IMG_DIR,
+        VAL_PARTS_ANN_DIR,
+        PARTS_META_PATH,
+        "parts_model.pth.tar"
+    )
 
 
 if __name__ == "__main__":
