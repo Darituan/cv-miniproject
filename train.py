@@ -20,8 +20,8 @@ from utils import (
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
-NUM_EPOCHS = 3
-NUM_WORKERS = 2
+NUM_EPOCHS = 20
+NUM_WORKERS = 4
 IMAGE_HEIGHT = 320
 IMAGE_WIDTH = 320
 PIN_MEMORY = True
@@ -131,11 +131,12 @@ def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path, checkpoi
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
-        save_checkpoint(checkpoint, checkpoint_filename)
+        # save_checkpoint(checkpoint, checkpoint_filename)
         # check accuracy
         check_accuracy(val_loader, model, device=DEVICE)
         # print some examples to a folder
-        save_predictions_as_imgs(val_loader, model, device=DEVICE)
+        # save_predictions_as_imgs(val_loader, model, device=DEVICE)
+    save_checkpoint(checkpoint, checkpoint_filename)
 
 
 def main():
