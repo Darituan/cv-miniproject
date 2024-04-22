@@ -1,5 +1,8 @@
+import random
+
 import torch
 import torchvision
+import matplotlib.pyplot as plt
 from dataset import CarDataset
 from torch.utils.data import DataLoader
 from metadata import retrieve_meta_data
@@ -78,9 +81,13 @@ def check_accuracy(loader, model, device="cuda"):
     model.train()
 
 
+def mask_to_image(mask, classes, associated_colors):
+    pass
+
+
 # modify for multiple classes
 def save_predictions_as_imgs(
-        loader, model, folder="saved_images/", device="cuda"
+        loader, model, classes, associated_colors, folder="saved_images/", device="cuda"
 ):
     model.eval()
     for idx, (x, y) in enumerate(loader):
@@ -91,6 +98,42 @@ def save_predictions_as_imgs(
         torchvision.utils.save_image(
             preds, f"{folder}/pred_{idx}.png"
         )
-        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}correct_{idx}.png")
+        torchvision.utils.save_image(y, f"{folder}/correct_{idx}.png")
 
     model.train()
+
+
+def visualize_image_and_masks(image, output, target):
+    col = 3
+    row = 1
+    fig, ax = plt.subplots(row,col)
+    ax[0].imshow(image)
+    ax[0].set_title("Image")
+    ax[1].imshow(output)
+    ax[1].set_title("Output")
+    ax[2].imshow(target)
+    ax[2].set_title("Target")
+    plt.show()
+
+
+def visualize(loader, model, device="cuda", num_examples=5):
+    model.eval()
+    with torch.no_grad():
+        xs, ys = next(iter(loader))
+        xs = xs.to(device)
+        ys = ys.to(device)
+        preds = torch.sigmoid((model(xs)))
+        preds = (preds > 0.5).float()
+        indices = random.sample(range(1, len(xs)), num_examples)
+        for i in indices:
+            x = xs[i]
+            y = ys[i]
+            pred = preds[i]
+            image = x.permute(1, 2, 0).cpu()
+            target = y.argmax(dim=0).cpu()
+            output = pred.argmax(dim=0).cpu()
+            visualize_image_and_masks(image, output, target)
+            plt.show()
+    model.train()
+
+

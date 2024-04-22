@@ -14,6 +14,7 @@ from utils import (
     get_loaders,
     check_accuracy,
     save_predictions_as_imgs,
+    visualize,
 )
 
 
@@ -25,7 +26,7 @@ NUM_WORKERS = 4
 IMAGE_HEIGHT = 320
 IMAGE_WIDTH = 320
 PIN_MEMORY = True
-LOAD_MODEL = False
+LOAD_MODEL = True
 
 TRAIN_PARTS_IMG_DIR = "dataset/parts/File1/img_train"
 VAL_PARTS_IMG_DIR = "dataset/parts/File1/img_val"
@@ -121,6 +122,8 @@ def train_on(train_dir, train_ann_dir, val_dir, val_ann_dir, meta_path, checkpoi
 
     if LOAD_MODEL:
         load_checkpoint(torch.load(checkpoint_filename), model)
+        visualize(val_loader, model, device=DEVICE)
+        return
 
     scaler = torch.cuda.amp.GradScaler()
     for epoch in range(NUM_EPOCHS):
